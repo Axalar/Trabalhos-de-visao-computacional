@@ -78,7 +78,6 @@ plot(points);
 %pointsPK.plot_scale();
 
 
-
 %% Laço de repetição para detecçaõ de features e matches
 
 Imgs = rgb2gray(Im{1});
@@ -89,7 +88,10 @@ pointsPK = isurf(Imgs, 'extended');
 ImSize = zeros(numIm,2);
 ImSize(1,:) = size(Imgs);
 
-% Laco de iteracao sobre as outras imagens
+% Inicializando primeira matriz da celula de matrizes de homografia
+H{1} = eye(3);
+
+% Laco de iteracao para geração de matrizes de homografia
 for i=2:numIm
     
     Imgs = rgb2gray(Im{i});
@@ -103,9 +105,7 @@ for i=2:numIm
     matches = prevPointsPK.match(pointsPK);
     
     % Aplica a funcao ransac no conjunto de matches
-    matches.ransac(@homography, 1e-1,'maxTrials', 1e4);
+    H{i} = matches.ransac(@homography, 4e-1,'maxTrials', 1e5);
     
 end
-
-
 
