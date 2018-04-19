@@ -65,7 +65,14 @@ I = readimage(buildingScene, 1);
 % Im{4} = iread('path');
 % Im{5} = iread('path');
 
-% numIm = numel(Im);
+Im{1} = readimage(buildingScene, 1);
+Im{2} = readimage(buildingScene, 2);
+Im{3} = readimage(buildingScene, 3);
+Im{4} = readimage(buildingScene, 4);
+Im{5} = readimage(buildingScene, 5);
+
+numIm = numel(Im);
+
 %% Initialize features for I(1) - teste
 grayImage = rgb2gray(I);
 points = detectSURFFeatures(grayImage);
