@@ -1,0 +1,10 @@
+diff a/Trabalho_1/Avaliacao_1_homografia.m b/Trabalho_1/Avaliacao_1_homografia.m	(rejected hunks)
+@@ -12,7 +12,7 @@
+ % Requisitos:
+ %   MATLAB
+ %   Machine Vision Toolbox 
+-%       P.I. Corke, “Robotics, Vision & Control”, Springer 2011, ISBN 978-3-642-20143-1.
++%       P.I. Corke, “Robotics, Vision & Control�?, Springer 2011, ISBN 978-3-642-20143-1.
+ %       http://petercorke.com/wordpress/toolboxes/machine-vision-toolbox
+ %%---------------------------------
+ 
