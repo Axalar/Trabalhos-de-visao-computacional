@@ -43,18 +43,26 @@
 %Desenvolva seu codigo aqui
 %% Leitura de imagens
 
-Im{1} = iread('dataset/building1.jpg');
-Im{2} = iread('dataset/building2.jpg');
-Im{3} = iread('dataset/building3.jpg');
-Im{4} = iread('dataset/building4.jpg');
-Im{5} = iread('dataset/building5.jpg');
+% Im{1} = iread('dataset/building1.jpg');
+% Im{2} = iread('dataset/building2.jpg');
+% Im{3} = iread('dataset/building3.jpg');
+% Im{4} = iread('dataset/building4.jpg');
+% Im{5} = iread('dataset/building5.jpg');
+
+Im{1} = iread('PIC_0373.JPG');
+Im{2} = iread('PIC_0374.JPG');
+Im{3} = iread('PIC_0375.JPG');
+Im{4} = iread('PIC_0376.JPG');
+Im{5} = iread('PIC_0377.JPG');
+Im{6} = iread('PIC_0378.JPG');
+
 
 numIm = numel(Im);
 midIm = floor((numIm+1)/2);
 
 %% Lacos de repeticao para deteccao de features, matches e encontrar matrizes de homografias
 
-% Inicializacao do primeiro laco de repeticao
+% Inicialização do primeiro laco de repeticao
 Imgs = rgb2gray(Im{1});
 % Identificacao de features da primeira imagem
 pointsPK = isurf(Imgs, 'extended');
@@ -72,11 +80,6 @@ for i=1:midIm-1
     [Hom{i}] = matches{i}.ransac(@homography, 0.2,'maxTrials', 2.5e4);
 
 end
-
-% Inicializacao do segundo laco de repeticao
-Imgs = rgb2gray(Im{midIm});
-% Identificacao de features da imagem do meio
-pointsPK = isurf(Imgs, 'extended');
 
 for i=midIm+1:numIm
     
@@ -109,6 +112,13 @@ for n=1:midIm-1
     [distort{midIm-n},off(midIm-n,:)] = homwarp(Hom{midIm-n},Im{midIm-n},'full','extrapval', 0);
     [distort{midIm+n},off(midIm+n,:)] = homwarp(Hom{midIm+n},Im{midIm+n},'full','extrapval', 0);
     
+end
+
+% Caso o dataset tem um numero par de imagens este if aplica a homografia
+% na ultima imagem
+if floor(numIm/2) == numIm/2
+    Hom{numIm} = Hom{numIm-1}*Hom{numIm};
+    [distort{numIm},off(numIm,:)] = homwarp(Hom{numIm},Im{numIm},'full','extrapval', 0);
 end
 
 % Plot das imagens apos aplicacao da homografia
