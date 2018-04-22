@@ -43,19 +43,18 @@
 %Desenvolva seu codigo aqui
 %% Leitura de imagens
 
-% Im{1} = iread('dataset/building1.jpg');
-% Im{2} = iread('dataset/building2.jpg');
-% Im{3} = iread('dataset/building3.jpg');
-% Im{4} = iread('dataset/building4.jpg');
-% Im{5} = iread('dataset/building5.jpg');
+Im{1} = iread('dataset/building1.jpg');
+Im{2} = iread('dataset/building2.jpg');
+Im{3} = iread('dataset/building3.jpg');
+Im{4} = iread('dataset/building4.jpg');
+Im{5} = iread('dataset/building5.jpg');
 
-Im{1} = iread('PIC_0373.JPG');
-Im{2} = iread('PIC_0374.JPG');
-Im{3} = iread('PIC_0375.JPG');
-Im{4} = iread('PIC_0376.JPG');
-Im{5} = iread('PIC_0377.JPG');
-Im{6} = iread('PIC_0378.JPG');
-
+% Im{1} = iread('dataset/PIC_0373.JPG');
+% Im{2} = iread('dataset/PIC_0374.JPG');
+% Im{3} = iread('dataset/PIC_0375.JPG');
+% Im{4} = iread('dataset/PIC_0376.JPG');
+% Im{5} = iread('dataset/PIC_0377.JPG');
+% Im{6} = iread('dataset/PIC_0378.JPG');
 
 numIm = numel(Im);
 midIm = floor((numIm+1)/2);
@@ -138,13 +137,13 @@ for i=1:numIm
     distgs{i} = rgb2gray(distort{i});
 end
 
-% Definicao das dimensoes do panorama
-u = off(numIm,1) + distSize(numIm,2) - off(1,1) +1;
-v = max(distSize(1:end,1)) + max(-off(1:end,2));
-
 % Calculo da posicao da imagem central no panorama
-midu = -min(off(1:end,1));
-midv = -min(off(1:end,2))+1;
+midu = abs(min(off(:,1)));
+midv = abs(min(off(:,2)))+1;
+
+% Definicao das dimensoes do panorama
+u = midu + off(numIm,1) + max(distSize(:,2)) +1;
+v = max(distSize(:,1)) + max(abs(off(:,2)));
 
 % Montagem do panorama
 panorama = zeros(v,u,3);
