@@ -12,7 +12,7 @@
 % Requisitos:
 %   MATLAB
 %   Machine Vision Toolbox 
-%       P.I. Corke, “Robotics, Vision & Control�?, Springer 2011, ISBN 978-3-642-20143-1.
+%       P.I. Corke, “Robotics, Vision & Control”, Springer 2011, ISBN 978-3-642-20143-1.
 %       http://petercorke.com/wordpress/toolboxes/machine-vision-toolbox
 %%---------------------------------
 
@@ -41,35 +41,6 @@
 
 
 %Desenvolva seu codigo aqui
-%% Notas
-
-% H = ransac(@homography,T) onde T é o threshold
-% Usar células para agrupar imagens e iterar Im{n}
-% consultar documentação de SurfPointFeature.match
-% consultar documentação de FeatureMatch.ransac
-% consultar documentação de ransac
-
-%% Load images.
-% buildingDir = fullfile(toolboxdir('vision'), 'visiondata', 'building');
-% buildingScene = imageDatastore(buildingDir);
-
-% Im{1} = readimage(buildingScene, 1);
-% Im{2} = readimage(buildingScene, 2);
-% Im{3} = readimage(buildingScene, 3);
-% Im{4} = readimage(buildingScene, 4);
-% Im{5} = readimage(buildingScene, 5);
-
-%% Initialize features for I(1) - teste
-% grayImage = rgb2gray(I);
-% points = detectSURFFeatures(grayImage);
-% pointsPK = isurf(grayImage, 'extended'); % Funcao que extrai features da
-% imagem. Retorna um vetor de objetos SurfPointFeature que contem
-% informacoes sobre os features como o vetor descritor e a posicao.
-
-% imshow(grayImage); hold on;
-% plot(points);
-%pointsPK.plot_scale();
-
 %% Leitura de imagens
 
 Im{1} = iread('dataset/building1.jpg');
@@ -79,54 +50,101 @@ Im{4} = iread('dataset/building4.jpg');
 Im{5} = iread('dataset/building5.jpg');
 
 numIm = numel(Im);
+midIm = floor((numIm+1)/2);
 
+%% Lacos de repeticao para deteccao de features, matches e encontrar matrizes de homografias
 
-%% Laco de repeticao para deteccao de features e matches
-
+% Inicializacao do primeiro laco de repeticao
 Imgs = rgb2gray(Im{1});
 % Identificacao de features da primeira imagem
 pointsPK = isurf(Imgs, 'extended');
 
-% Armazenando tamanho das imagens
-ImSize = zeros(numIm,2);
-ImSize(1,:) = size(Imgs);
+for i=1:midIm-1
 
-% Inicializando primeira matriz da celula de matrizes de homografia
-H{1} = eye(3);
-matches{1} = 0;
+    Imgs = rgb2gray(Im{i+1});
+    prevPointsPK = pointsPK;
+    pointsPK = isurf(Imgs, 'extended');
+    
+    % Deteccao de matches entre features de duas imagens (im(i-1) -> im(i))
+    matches{i} = prevPointsPK.match(pointsPK, 'top', 50);
+    
+    % Aplica a funcao ransac no conjunto de matches
+    [Hom{i}] = matches{i}.ransac(@homography, 0.2,'maxTrials', 2.5e4);
 
-% Laco de iteracao para geracao de matrizes de homografia
-for i=2:numIm
+end
+
+% Inicializacao do segundo laco de repeticao
+Imgs = rgb2gray(Im{midIm});
+% Identificacao de features da imagem do meio
+pointsPK = isurf(Imgs, 'extended');
+
+for i=midIm+1:numIm
     
     Imgs = rgb2gray(Im{i});
     prevPointsPK = pointsPK;
     pointsPK = isurf(Imgs, 'extended');
     
-    % Salvando tamanho da imagem
-    ImSize(i,:) = size(Imgs);
-    
-    % Deteccao de matches entre features de duas imagens
-    matches{i} = prevPointsPK.match(pointsPK, 'top', 100);
+    % Deteccao de matches entre features de duas imagens (im(i) -> im(i-1))
+    matches{i} = pointsPK.match(prevPointsPK, 'top', 50);
     
     % Aplica a funcao ransac no conjunto de matches
-    H{i} = matches{i}.ransac(@homography, 1e-1,'maxTrials', 1.5e4);
+    [Hom{i}] = matches{i}.ransac(@homography, 0.2,'maxTrials', 2.5e4);
     
 end
 
+%% Aplicacao da homografia
 
-%% Teste da homografia
+% Matriz de homografia da imagem central
+Hom{midIm} = eye(3);
+% Aplicacao da homografia da imagem central
+[distort{midIm},off(midIm,:)] = homwarp(Hom{midIm},Im{midIm},'full','extrapval', 0);
 
-Hom{1} = H{3}*H{2};
-Hom{2} = H{3};
-Hom{3} = eye(3);
-Hom{4} = inv(H{4});
-% Hinv{5} = Hinv{4}*inv(H{5});
-Hom{5} = Hom{4}/H{5};
+for n=1:midIm-1
+    
+    % Calculo das matrizes de homografia em relacao a imagem central
+    Hom{midIm-n} = Hom{midIm-n+1}*Hom{midIm-n};
+    Hom{midIm+n} = Hom{midIm+n-1}*Hom{midIm+n};
+    
+    % Aplicacao da homografia as demais imagens
+    [distort{midIm-n},off(midIm-n,:)] = homwarp(Hom{midIm-n},Im{midIm-n},'full','extrapval', 0);
+    [distort{midIm+n},off(midIm+n,:)] = homwarp(Hom{midIm+n},Im{midIm+n},'full','extrapval', 0);
+    
+end
 
-distort{1} = homwarp(Hom{1},Im{1},'full');
-distort{2} = homwarp(Hom{2},Im{2},'full');
-distort{3} = homwarp(Hom{3},Im{3},'full');
-distort{4} = homwarp(Hom{4},Im{4},'full');
-distort{5} = homwarp(Hom{5},Im{5},'full');
+% Plot das imagens apos aplicacao da homografia
+% figure
+% idisp(distort);
 
-idisp({distort{1},distort{2},distort{3},distort{4},distort{5}});
+%% Montagem do panorama
+
+for i=1:numIm
+    % Variavel para salvar o tamanho das imagens apos a homografia
+    temp =  size(distort{i});
+    distSize(i,:) = [temp(1,1),temp(1,2)]; % distSize(i) = [vi,ui]
+    
+    % Criacao de mascaras
+    mask{i} = rgb2gray(distort{i}) == 0;
+    
+    distgs{i} = rgb2gray(distort{i});
+end
+
+% Definicao das dimensoes do panorama
+u = off(numIm,1) + distSize(numIm,2) - off(1,1) +1;
+v = max(distSize(1:end,1)) + max(-off(1:end,2));
+
+% Calculo da posicao da imagem central no panorama
+midu = -min(off(1:end,1));
+midv = -min(off(1:end,2))+1;
+
+% Montagem do panorama
+panorama = zeros(v,u,3);
+for i=numIm:-1:1
+    mastermask = ones(v,u,3);
+    mastermask = ipaste(mastermask,mask{i},[midu+off(i,1)+1,midv+off(i,2)]);
+    panorama = panorama.*mastermask;
+    panorama = ipaste(panorama,distort{i},[midu+off(i,1)+1,midv+off(i,2)],'add');
+end
+
+% Plot do panorama
+figure
+idisp(panorama);
