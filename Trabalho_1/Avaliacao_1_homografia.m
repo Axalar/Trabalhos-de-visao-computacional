@@ -144,6 +144,7 @@ idisp(distort);
 %% Montagem do panorama
 
 for i=1:numIm
+
     % Variavel para salvar o tamanho das imagens apos a homografia
     temp =  size(distort{i});
     distSize(i,:) = [temp(1,1),temp(1,2)]; % distSize(i) = [vi,ui]
@@ -151,7 +152,6 @@ for i=1:numIm
     % Criacao de mascaras
     mask{i} = rgb2gray(distort{i}) == 0;
     
-    distgs{i} = rgb2gray(distort{i});
 end
 
 % Calculo da posicao da imagem central no panorama
@@ -165,10 +165,12 @@ v = max(distSize(:,1)) + max(abs(off(:,2)));
 % Montagem do panorama
 panorama = zeros(v,u,3);
 for i=1:numIm
+    
     mastermask = ones(v,u,3);
     mastermask = ipaste(mastermask,mask{i},[midu+off(i,1)+1,midv+off(i,2)]);
     panorama = panorama.*mastermask;
     panorama = ipaste(panorama,distort{i},[midu+off(i,1)+1,midv+off(i,2)],'add');
+    
 end
 
 % Plot do panorama
