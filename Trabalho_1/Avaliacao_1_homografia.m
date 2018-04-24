@@ -43,18 +43,35 @@
 %Desenvolva seu codigo aqui
 %% Leitura de imagens
 
-Im{1} = iread('dataset/building1.jpg');
-Im{2} = iread('dataset/building2.jpg');
-Im{3} = iread('dataset/building3.jpg');
-Im{4} = iread('dataset/building4.jpg');
-Im{5} = iread('dataset/building5.jpg');
+% Dataset building
+Im{1} = iread('dataset/building1.jpg','double');
+Im{2} = iread('dataset/building2.jpg','double');
+Im{3} = iread('dataset/building3.jpg','double');
+Im{4} = iread('dataset/building4.jpg','double');
+Im{5} = iread('dataset/building5.jpg','double');
 
+% Dateset paisagem
 % Im{1} = iread('dataset/PIC_0373.JPG');
 % Im{2} = iread('dataset/PIC_0374.JPG');
 % Im{3} = iread('dataset/PIC_0375.JPG');
 % Im{4} = iread('dataset/PIC_0376.JPG');
 % Im{5} = iread('dataset/PIC_0377.JPG');
 % Im{6} = iread('dataset/PIC_0378.JPG');
+
+% Dateset UFSC
+% Im{1} = iread('dataset/UFSC1.jpg');
+% Im{2} = iread('dataset/UFSC2.jpg');
+% Im{3} = iread('dataset/UFSC3.jpg');
+% Im{4} = iread('dataset/UFSC4.jpg');
+% Im{5} = iread('dataset/UFSC5.jpg');
+
+% Redimencionamento de imagens para datasets com imagens muito grandes
+% Usar com o dataset UFSC
+% Im{1} = imresize(Im{1}, [480, 640]);
+% Im{2} = imresize(Im{2}, [480, 640]);
+% Im{3} = imresize(Im{3}, [480, 640]);
+% Im{4} = imresize(Im{4}, [480, 640]);
+% Im{5} = imresize(Im{5}, [480, 640]);
 
 numIm = numel(Im);
 midIm = floor((numIm+1)/2);
@@ -113,16 +130,16 @@ for n=1:midIm-1
     
 end
 
-% Caso o dataset tem um numero par de imagens este if aplica a homografia
+% Caso o dataset tenha um numero par de imagens este if aplica a homografia
 % na ultima imagem
-if floor(numIm/2) == numIm/2
+if ~mod(numIm,2)
     Hom{numIm} = Hom{numIm-1}*Hom{numIm};
     [distort{numIm},off(numIm,:)] = homwarp(Hom{numIm},Im{numIm},'full','extrapval', 0);
 end
 
 % Plot das imagens apos aplicacao da homografia
-% figure
-% idisp(distort);
+figure
+idisp(distort);
 
 %% Montagem do panorama
 
@@ -138,16 +155,16 @@ for i=1:numIm
 end
 
 % Calculo da posicao da imagem central no panorama
-midu = abs(min(off(:,1)));
+midu = abs(min(off(:,1)))+1;
 midv = abs(min(off(:,2)))+1;
 
 % Definicao das dimensoes do panorama
-u = midu + off(numIm,1) + max(distSize(:,2)) +1;
+u = midu + off(numIm,1) + distSize(numIm,2);
 v = max(distSize(:,1)) + max(abs(off(:,2)));
 
 % Montagem do panorama
 panorama = zeros(v,u,3);
-for i=numIm:-1:1
+for i=1:numIm
     mastermask = ones(v,u,3);
     mastermask = ipaste(mastermask,mask{i},[midu+off(i,1)+1,midv+off(i,2)]);
     panorama = panorama.*mastermask;
