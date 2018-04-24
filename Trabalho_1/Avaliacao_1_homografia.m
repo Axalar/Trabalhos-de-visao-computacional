@@ -137,9 +137,9 @@ if ~mod(numIm,2)
     [distort{numIm},off(numIm,:)] = homwarp(Hom{numIm},Im{numIm},'full','extrapval', 0);
 end
 
-% Plot das imagens apos aplicacao da homografia
-figure
-idisp(distort);
+% Plot das imagens apos aplicacao da homografia (opcional)
+% figure
+% idisp(distort);
 
 %% Montagem do panorama
 
