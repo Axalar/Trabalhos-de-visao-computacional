@@ -90,16 +90,15 @@ close all
 
 placa = iread('dataset/placa_carro1.jpg','double'); % removar depois
 imgs = rgb2gray(placa);
-imthold = imgs < 0.2; %otsu(imgs);
-imtholdst = imthold(35:70,:);
+imthold = imgs < multithresh(imgs); %0.2;
+imtholdst = imgs(35:70,:) < multithresh(imgs(35:70,:));
 
 tamanhoim = size(imgs);
 bh = tamanhoim(1)/tamanhoim(2);
 areaim = tamanhoim(1)*tamanhoim(2);
 
-blobsst = iblobs(imtholdst, 'class', 1, 'area', [35,1000], 'connect', 8);
-blobscd = iblobs(imthold, 'class', 1, 'area', [500,10000]);
-
+blobsst = iblobs(imtholdst, 'class', 1, 'area', [90,300], 'connect', 8);
+blobscd = iblobs(imthold, 'class', 1, 'area', [550,10000]);
 
 %% sorting
 
@@ -107,7 +106,6 @@ blobscd = sortBlobs(blobscd);
 blobsst = sortBlobs(blobsst);
 
 %%
-
 for i=1:numel(blobscd)
     
     crctcd{i} = imthold(blobscd(i).vmin:blobscd(i).vmax,blobscd(i).umin:blobscd(i).umax);
@@ -200,7 +198,6 @@ end
 idisp({tmpA{index}})
 
 %%
-
 % for i=1:26
 %     tamanho = size(tmpA{i});
 %     temp = imresize(crctcd{1},tamanho);
