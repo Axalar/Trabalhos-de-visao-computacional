@@ -81,7 +81,7 @@
 
 
 %Desenvolva seu codigo aqui
-% function strings = carPlateRead
+% function out = plateRead(im)
 %% clear & close all - remover depois
 clear all
 close all
@@ -89,18 +89,58 @@ close all
 %% inicializacao
 
 placa = iread('dataset/placa_carro1.jpg','double'); % removar depois
-imgs = rgb2gray(placa);
-imthold = imgs < multithresh(imgs); %0.2;
-imtholdst = imgs(35:70,:) < multithresh(imgs(35:70,:));
 
+% imgs = findPlate(im);
+
+imgs = rgb2gray(placa);
 tamanhoim = size(imgs);
-bh = tamanhoim(1)/tamanhoim(2);
+hb = tamanhoim(1)/tamanhoim(2);
 areaim = tamanhoim(1)*tamanhoim(2);
 
-blobsst = iblobs(imtholdst, 'class', 1, 'area', [90,300], 'connect', 8);
-blobscd = iblobs(imthold, 'class', 1, 'area', [550,10000]);
+if hb > 0.5882
 
-%% sorting
+    vmincd = floor((75/310)*tamanhoim(1));
+    vmaxcd = floor((290/310)*tamanhoim(1));
+    umincd = floor((40/364)*tamanhoim(2));
+    umaxcd = floor((320/364)*tamanhoim(2));
+    
+    vminst = floor((42/310)*tamanhoim(1));
+    vmaxst = floor((66/310)*tamanhoim(1));
+    uminst = floor((59/364)*tamanhoim(2));
+    umaxst = floor((314/364)*tamanhoim(2));
+    
+else
+    
+    vmincd = floor((75/241)*tamanhoim(1));
+    vmaxcd = floor((214/241)*tamanhoim(1));
+    umincd = floor((37/742)*tamanhoim(2));
+    umaxcd = floor((704/742)*tamanhoim(2));
+    
+    vminst = floor((39/241)*tamanhoim(1));
+    vmaxst = floor((67/241)*tamanhoim(1));
+    uminst = floor((100/742)*tamanhoim(2));
+    umaxst = floor((646/742)*tamanhoim(2));
+    
+end
+
+%% segmenting
+
+imgscd = imgs(vmincd:vmaxcd, umincd:umaxcd);
+imgsst = imgs(vminst:vmaxst, uminst:umaxst);
+idisp({imgscd, imgsst})
+
+%% thresholding
+
+imtholdcd = imgscd < multithresh(imgscd);
+imtholdst = imgsst < multithresh(imgsst);
+
+
+%% extracting blobs
+
+blobsst = iblobs(imtholdst, 'class', 1, 'area', [75/140000*areaim, areaim], 'connect', 8);
+blobscd = iblobs(imtholdcd, 'class', 1, 'area', [550/140000*areaim, areaim]);
+
+%% sorting blobs
 
 blobscd = sortBlobs(blobscd);
 blobsst = sortBlobs(blobsst);
@@ -108,15 +148,19 @@ blobsst = sortBlobs(blobsst);
 %%
 for i=1:numel(blobscd)
     
-    crctcd{i} = imthold(blobscd(i).vmin:blobscd(i).vmax,blobscd(i).umin:blobscd(i).umax);
+    crctcd{i} = imtholdcd(blobscd(i).vmin:blobscd(i).vmax,blobscd(i).umin:blobscd(i).umax);
         
 end
+idisp({crctcd{:}})
 
 for i=1:numel(blobsst)
     
-    crctst{i} = imtholdst(blobsst(i).vmin:blobsst(i).vmax,blobsst(i).umin:blobsst(i).umax);
-
+    t = multithresh(imgs(blobsst(i).vmin:blobsst(i).vmax,blobsst(i).umin:blobsst(i).umax));
+    crctst{i} = imtholdst(blobsst(i).vmin:blobsst(i).vmax,blobsst(i).umin:blobsst(i).umax) > t;
+    
 end
+idisp({crctst{:}})
+
 %% templates
 
 thold = rgb2gray(iread('templates/templateA.png')) == 0;
@@ -126,7 +170,11 @@ btpa = btpa(I);
 
 for i=1:26
     
-    tmpA{i} = thold(btpa(i).vmin:btpa(i).vmax,btpa(i).umin:btpa(i).umax);
+    if i == 9
+        tmpA{i} = thold(btpa(i).vmin:btpa(i).vmax,btpa(i).umin-2:btpa(i).umax+2);
+    else
+        tmpA{i} = thold(btpa(i).vmin:btpa(i).vmax,btpa(i).umin:btpa(i).umax);
+    end
     
 end
 
@@ -137,27 +185,30 @@ btpn = btpn(I);
 
 for i=1:10
     
-    tmpN{i} = thold(btpn(i).vmin:btpn(i).vmax,btpn(i).umin:btpn(i).umax);
+    tmpN{i} = thold(btpn(i).vmin:btpn(i).vmax, btpn(i).umin:btpn(i).umax);
     
 end
 
 %% Comparar letras
 
 m = [];
-for k =1:3
+for k=1:3
     
     for i=1:26
         
         tamanho = size(tmpA{i});
-        temp = imresize(crctcd{k},tamanho);
-        m(i) = zncc(temp,tmpA{i});
+        temp = imresize(crctcd{k}, tamanho);
+        m(i) = zncc(temp, tmpA{i});
         
     end
     
-    [~,I] = max(m);
+    [~, I] = max(m);
     index(k) = I;
     
 end
+
+out{1} = index2string(index(1:3), 'a');
+
 %% Comparar Numeros
 
 m = [];
@@ -165,8 +216,8 @@ for k =1:4
     
     for i=1:10
         tamanho = size(tmpN{i});
-        temp = imresize(crctcd{3+k},tamanho);
-        m(i) = zncc(temp,tmpN{i});
+        temp = imresize(crctcd{3+k}, tamanho);
+        m(i) = zncc(temp, tmpN{i});
     end
     
     [~,I] = max(m);
@@ -174,19 +225,20 @@ for k =1:4
     
 end
 
-idisp({tmpA{index(1:3)},tmpN{index(4:end)}})
+out{2} = index2string(index(4:end), 'n');
+idisp({tmpA{index(1:3)}, tmpN{index(4:end)}})
 
 %% Comparar letras (estado, municipio)
 
 m = [];
 index = [];
-for k =1:numel(crctst)
+for k=1:numel(crctst)
     
     for i=1:26
         
         tamanho = size(tmpA{i});
-        temp = imresize(crctst{k},tamanho);
-        m(i) = zncc(temp,tmpA{i});
+        temp = imresize(crctst{k}, tamanho);
+        m(i) = zncc(temp, tmpA{i});
         
     end
     
@@ -195,39 +247,6 @@ for k =1:numel(crctst)
     
 end
 
+out{3} = index2string(index(1:2), 'a');
+out{4} = index2string(index(3:end), 'a')
 idisp({tmpA{index}})
-
-%%
-% for i=1:26
-%     tamanho = size(tmpA{i});
-%     temp = imresize(crctcd{1},tamanho);
-%     m(i) = zncc(tmpA{i},temp);
-% end
-% 
-% [~,I] = max(m)
-
-% batata = compare(crctcd);
-
-
-%%
-% idisp(imthold(35:70,:))
-% for i=1:numel(blobsst)
-%     plot_box(blobsst(i).umin, blobsst(i).vmin, blobsst(i).umax, blobsst(i).vmax, 'g');
-% end
-% 
-% for i=1:numel(blobsst)
-%     
-%     crctst{i} = placast(blobsst(i).vmin:blobsst(i).vmax,blobsst(i).umin:blobsst(i).umax);
-%     
-% end
-% idisp({crctst{:}})
-% 
-% for i=1:26
-%     tamanho = size(tmpA{i});
-%     temp = imresize(crctst{5},tamanho);
-%     m(i) = zncc(tmpA{i},temp);
-% end
-% 
-% [~,I] = max(m)
-% 
-% T = niblack(imgs(35:70,:), -0.2, 3);
