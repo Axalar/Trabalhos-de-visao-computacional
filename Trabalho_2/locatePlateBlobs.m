@@ -1,11 +1,16 @@
+%LOCATEPLATEBLOBS localização dos caracteres de placas veículares
+% letrasDaPlaca = locatePlateBlobs(im) é um vetor de objetos do tipo
+% RegionFeature correspondentes aos caracteres da placa veícular presente
+% na imagem.
+
 function letrasDaPlaca = locatePlateBlobs(im)
 
     if size(im, 3) == 3
         imgs = rgb2gray(im);
-        imthold = imgs < multithresh(imgs);
+        imthold = thresholding(imgs);
     else
         imgs = im;
-        imthold = im < multithresh(im);
+        imthold = thresholding(imgs);
     end
 
     [vim, uim] = size(imgs);
@@ -13,7 +18,7 @@ function letrasDaPlaca = locatePlateBlobs(im)
 
     %% Extração de blobs
 
-    imgBlobs = iblobs(imthold, 'class', 1, 'area', [floor(areaim*100/468/823), areaim]);
+    imgBlobs = iblobs(imthold, 'class', 1, 'area', [floor(areaim*100/468/823), areaim*0.038], 'touch', 0);
 
     %% Identificação de pais
 
@@ -47,6 +52,7 @@ function letrasDaPlaca = locatePlateBlobs(im)
     %% Identificação de pais de interesse com pelo menos 7 filhos
 
     i = 1;
+    paisDeInteresse = [];
     for j=1:numPais
 
         if quantidadeFilhos(j) >= 7
@@ -54,6 +60,50 @@ function letrasDaPlaca = locatePlateBlobs(im)
             paisDeInteresse(i) = pais(j);
             i = i+1;
 
+        end
+    end
+    
+    % Caso não sejam encontrados blobs suficientes, é feita uma nova
+    % tentativa usando threshold local
+    if numel(paisDeInteresse) < 1
+        
+        imthold = imbinarize(imgs, 'adaptive','ForegroundPolarity','dark','Sensitivity',0.3);
+        imthold = imthold == 0;
+        imgBlobs = iblobs(imthold, 'class', 1, 'area', [floor(areaim*100/468/823), areaim*0.038], 'touch', 0);
+        numBlobs = numel(imgBlobs);
+        
+        for i=1:numBlobs
+
+            vetorDePais(i) = imgBlobs(i).parent;
+
+        end
+        
+        pais = unique(vetorDePais);
+ 
+        for j=1:numel(pais);
+
+            cont = 0;
+
+            for i=1:numBlobs
+
+                if pais(j) == vetorDePais(i)
+                    cont = cont + 1;
+                end
+            end
+            
+            quantidadeFilhos(j) = cont;
+
+        end
+
+        i = 1;
+        for j=1:numel(pais);
+
+            if quantidadeFilhos(j) >= 7
+
+                paisDeInteresse(i) = pais(j);
+                i = i+1;
+
+            end
         end
     end
 
@@ -66,25 +116,8 @@ function letrasDaPlaca = locatePlateBlobs(im)
 
             if imgBlobs(i).parent == paisDeInteresse(l)
 
-                filhosDeInteresse(j) = imgBlobs(i);
+                possiveisLetras(j) = imgBlobs(i);
                 j = 1 + j;
-
-            end
-        end
-    end
-
-    %% Separando blobs de interesse por pai
-
-    for i=1:numel(paisDeInteresse)
-
-        k = 1;
-
-        for j=1:numel(filhosDeInteresse)
-
-            if filhosDeInteresse(j).parent == paisDeInteresse(i)
-
-                possiveisLetras{i}(k) = filhosDeInteresse(j);
-                k = k+1;
 
             end
         end
@@ -92,53 +125,35 @@ function letrasDaPlaca = locatePlateBlobs(im)
 
     %% Ordena os blobs com area decrescente
 
-    for i=1:numel(possiveisLetras)
+    [~,I] = sort(possiveisLetras.area, 'descend');
+    possiveisLetras = possiveisLetras(I);
+        
+    %% Comparação dos 14 maiores blobs pelo desvio padrão da altura
 
-        [~,I] = sort(possiveisLetras{i}.area, 'descend');
-        possiveisLetras{i} = possiveisLetras{i}(I);
+    % Calcula o desvio padrão da altura das combinações de até 14 blobs com
+    % maior área em grupos de 7
+    if numel(possiveisLetras) < 14
+
+        I = nchoosek(1:1:numel(possiveisLetras),7);
+
+    else
+
+        I = nchoosek(1:1:14,7);
 
     end
 
-    %%
+    [nit,~] = size(I);
+    hightstd = zeros(nit,1);
 
-    for i=1:numel(possiveisLetras)
+    for j=1:nit
 
-        if numel(possiveisLetras{i}) < 14
-
-            I = nchoosek([1:1:numel(possiveisLetras{i})],7);
-
-        else
-
-            temp = possiveisLetras{i}.area;
-            temp = temp/max(temp);
-            temp = temp > multithresh(temp);
-            I = nchoosek([1:1:sum(temp)],7);
-
-        end
-
-        np = numel(possiveisLetras);
-        [nit,~] = size(I);
-        areastd = zeros(nit,np);
-        aream = zeros(nit,np);
-        hightstd = zeros(nit,np);
-        ustd = zeros(nit,np);
-        vstd = zeros(nit,np);
-
-        for j=1:nit
-
-%             areastd(j,i) = std(possiveisLetras{1}(I(j,:)).area);
-%             aream(j,i) = mean(possiveisLetras{1}(I(j,:)).area);
-            hightstd(j,i) = std(possiveisLetras{1}(I(j,:)).vmax-possiveisLetras{1}(I(j,:)).vmin);
-%             ustd(j,i) = std(possiveisLetras{1}(I(j,:)).uc);
-%             vstd(j,i) = std(possiveisLetras{1}(I(j,:)).vc);
-
-        end
+        hightstd(j) = std(possiveisLetras(I(j,:)).vmax-possiveisLetras(I(j,:)).vmin);
+        
     end
 
-    % [~,Indexa] = sort(areastd);
     [~,Indexh] = sort(hightstd);
-
-    letrasDaPlaca = possiveisLetras{1}(I(Indexh(1),:));
-    [~,I] = sort(letrasDaPlaca.umin);
-    letrasDaPlaca = letrasDaPlaca(I);
+    letrasDaPlaca = possiveisLetras(I(Indexh(1),:));
+    [~,It] = sort(letrasDaPlaca.umin);
+    letrasDaPlaca = letrasDaPlaca(It);
+    
 end

@@ -1,3 +1,13 @@
+%PLATEORIENTATION oreientação de plca veícular
+% [L, P] = plateOrientation(letrasDaPlaca) são respectivamente uma célula
+% contendo vetores de pontos que formam 3 retas e uma matriz contendo os
+% polinômios que descrevem estas retas. L{1} são os pontos da reta que
+% passam por cima das RegionFeatures letrasDaPlaca e esta reta é descrita
+% pelo polinômio contido em P(1,:). L{2} são os pontos da reta que passa
+% pelo meio dos RegionFeatures e é descrita por P(2,:). E por fim L{3} são
+% os pontos da reta que passa por baixo dos RegionFeatures e é descrita
+% pelo polinômio contido em P(3,:).
+
 function [L, P] = plateOrientation(letrasDaPlaca)
 
     r1 = [letrasDaPlaca.umin; letrasDaPlaca.vmin];
@@ -22,17 +32,14 @@ function [L, P] = plateOrientation(letrasDaPlaca)
     polt = polyfit([x1,x2], [y1,y2], 1);
     xt = linspace(min([x1,x2]), max([x1,x2]));
     yt = polyval(polt,xt);
-    plot(xt,yt)
 
     polm = polyfit([x1,x2,x3,x4], [y1,y2,y3,y4], 1);
     xm = linspace(min([x1,x2,x3,x4]), max([x1,x2,x3,x4]));
     ym = polyval(polm,xm);
-    plot(xm,ym)
 
     polb = polyfit([x3,x4], [y3,y4], 1);
     xb = linspace(min([x3,x4]), max([x3,x4]));
     yb = polyval(polb,xb);
-    plot(xb,yb)
 
     Lt = [xt; yt; zeros(size(xt))];
     Lm = [xm; ym; zeros(size(xm))];

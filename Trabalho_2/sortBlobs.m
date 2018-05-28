@@ -4,6 +4,7 @@
 % até o mais distante. Objetos com aproximadamente a mesma distância do
 % eixo u são ordenados conforme sua distância ao eixo v, do maix próximo
 % ao mais distante.
+
 function sorted = sortBlobs(blobs)
 
     j = 1;
@@ -34,6 +35,6 @@ function sorted = sortBlobs(blobs)
         
     end
 
-sorted = [temp{1:end}];
+    sorted = [temp{1:end}];
 
 end

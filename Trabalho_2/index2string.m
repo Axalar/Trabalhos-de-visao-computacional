@@ -1,9 +1,10 @@
-%INDEX2STRING STRING
+%INDEX2STRING STRING índice para string
 % str = index2string(I, NORA) is a string in where each character is
 % determined by its corresponding index provided by the array I, acording 
 % to the alpha numeric templates used by the function readPlate(). The 
 % string NORA is used to determine if the indexes represent numeric or 
 % alphabetic characters, and it must be respectively 'n' or 'a'.
+
 function str = index2string(index, nora)
 
     str = [];
