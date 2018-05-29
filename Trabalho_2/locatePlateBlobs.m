@@ -1,6 +1,6 @@
-%LOCATEPLATEBLOBS localizaÁ„o dos caracteres de placas veÌculares
-% letrasDaPlaca = locatePlateBlobs(im) È um vetor de objetos do tipo
-% RegionFeature correspondentes aos caracteres da placa veÌcular presente
+%LOCATEPLATEBLOBS localiza√ß√£o dos caracteres de placas ve√≠culares
+% letrasDaPlaca = locatePlateBlobs(im) √© um vetor de objetos do tipo
+% RegionFeature correspondentes aos caracteres da placa ve√≠cular presente
 % na imagem.
 
 function letrasDaPlaca = locatePlateBlobs(im)
@@ -16,11 +16,11 @@ function letrasDaPlaca = locatePlateBlobs(im)
     [vim, uim] = size(imgs);
     areaim = vim*uim;
 
-    %% ExtraÁ„o de blobs
+    %% Extra√ß√£o de blobs
 
     imgBlobs = iblobs(imthold, 'class', 1, 'area', [floor(areaim*100/468/823), areaim*0.038], 'touch', 0);
 
-    %% IdentificaÁ„o de pais
+    %% Identifica√ß√£o de pais
 
     numBlobs = numel(imgBlobs);
     for i=1:numBlobs
@@ -49,7 +49,7 @@ function letrasDaPlaca = locatePlateBlobs(im)
 
     end
 
-    %% IdentificaÁ„o de pais de interesse com pelo menos 7 filhos
+    %% Identifica√ß√£o de pais de interesse com pelo menos 7 filhos
 
     i = 1;
     paisDeInteresse = [];
@@ -63,7 +63,7 @@ function letrasDaPlaca = locatePlateBlobs(im)
         end
     end
     
-    % Caso n„o sejam encontrados blobs suficientes, È feita uma nova
+    % Caso n√£o sejam encontrados blobs suficientes, √© feita uma nova
     % tentativa usando threshold local
     if numel(paisDeInteresse) < 1
         
@@ -128,17 +128,17 @@ function letrasDaPlaca = locatePlateBlobs(im)
     [~,I] = sort(possiveisLetras.area, 'descend');
     possiveisLetras = possiveisLetras(I);
         
-    %% ComparaÁ„o dos 14 maiores blobs pelo desvio padr„o da altura
+    %% Compara√ß√£o dos 14 maiores blobs pelo desvio padr√£o da altura
 
-    % Calcula o desvio padr„o da altura das combinaÁıes de atÈ 14 blobs com
-    % maior ·rea em grupos de 7
-    if numel(possiveisLetras) < 14
+    % Calcula o desvio padr√£o da altura das combina√ß√µes de at√© 14 blobs com
+    % maior √°rea em grupos de 7
+    if numel(possiveisLetras) < 13
 
         I = nchoosek(1:1:numel(possiveisLetras),7);
 
     else
 
-        I = nchoosek(1:1:14,7);
+        I = nchoosek(1:1:13,7);
 
     end
 
