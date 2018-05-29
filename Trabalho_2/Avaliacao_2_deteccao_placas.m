@@ -80,61 +80,8 @@
 %%---------------------------------
 
 
-%Desenvolva seu codigo aqui
-%%
-clear all
-close all
+im = iread('dataset/placa_carro2.jpg', 'double');
 
-%%
-% placa{1} = iread('placa_carro1.jpg','double');
-% placa{2} = iread('placa_carro2.jpg','double');
-% placa{3} = iread('placa_carro3.jpg','double');
-% placa{4} = iread('placa_carro4.jpg','double');
-% placa{5} = iread('placa_carro5.png','double');
-% placa{2} = iread('placa_moto1.jpg','double');
-% placa{7} = iread('placa_moto2.jpg','double');
-% placa{8} = iread('placa_moto3.jpg','double');
-% placa{9} = iread('placa_moto4.jpg','double');
-
-% imnum = numel(placa);
-
-
-placa = iread('dataset/placa_carro1.jpg','double');
-imgs = rgb2gray(placa);
-imthold = imgs < 0.2;
-
-blobs = iblobs(imthold, 'class', 1, 'area', [4000,7000]);
-
-%% templates
-
-thold = rgb2gray(iread('templates/templateA.png')) == 0;
-btpa = iblobs(thold, 'class', 1);
-[~,I] = sort(btpa(:).uc);
-btpa = btpa(I);
-
-for i=1:26
-    
-    tmpA{i} = thold(btpa(i).vmin:btpa(i).vmax,btpa(i).umin:btpa(i).umax);
-    
-end
-
-thold = rgb2gray(iread('templates/templateN.png')) == 0;
-btpn = iblobs(thold, 'class', 1);
-[~,I] = sort(btpn(:).uc);
-btpn = btpn(I);
-
-for i=1:10
-    
-    tmpN{i} = thold(btpn(i).vmin:btpn(i).vmax,btpn(i).umin:btpn(i).umax);
-    
-end
-
-
-
-
-
-
-
-
-
-
+% A função readPlate foi desenvolvida para realizar os requesitos do
+% trabalho até 10.0 pontos.
+readPlate(im)
