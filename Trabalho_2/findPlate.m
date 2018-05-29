@@ -1,5 +1,5 @@
-%FINDPLATE isola a placa veícular presente na imagem
-% placa = findPlate(im) é uma imagem contendo a placa veícular presente na
+%FINDPLATE isola a placa veÃ­cular presente na imagem
+% placa = findPlate(im) Ã© uma imagem contendo a placa veÃ­cular presente na
 % imagem im isolada e com perspectiva corrigida.
 
 function placa = findPlate(im)
@@ -11,9 +11,9 @@ else
     imgs = im;
 end
 
-%% Localização das letras da placa
+%% LocalizaÃ§Ã£o das letras da placa
 
-% Usa a função locatePlateBlobs para encontrar os caracteres da placa
+% Usa a funÃ§Ã£o locatePlateBlobs para encontrar os caracteres da placa
 letrasDaPlaca = locatePlateBlobs(imgs);
 
 % ----------
@@ -21,9 +21,9 @@ letrasDaPlaca = locatePlateBlobs(imgs);
 % letrasDaPlaca.plot_box
 % ----------
 
-%% Determinação da orientação da placa a partir das letras
+%% DeterminaÃ§Ã£o da orientaÃ§Ã£o da placa a partir das letras
 
-% Usa a função abaixo para determinar as retas de orientação da placa
+% Usa a funÃ§Ã£o abaixo para determinar as retas de orientaÃ§Ã£o da placa
 [L, P] = plateOrientation(letrasDaPlaca);
 
 % Linhas do topo, meio e baixo das letras
@@ -31,28 +31,28 @@ Lt = L{1};
 Lm = L{2};
 Lb = L{3};
 
-% Polinômios que descrevem as respectivas linhas acima
+% PolinÃ´mios que descrevem as respectivas linhas acima
 polt = P(1,:);
 polm = P(2,:);
 polb = P(3,:);
 
 thetam = atan(polm(1));
 axang = [0 0 1 -thetam];
-rotm = axang2rotm(axang); % rotação do referêncial global para referêncial de Lm
+rotm = axang2rotm(axang); % rotaÃ§Ã£o do referÃªncial global para referÃªncial de Lm
 
-% Determina o método de cálculo da inclinação das laterais da placa
-% baseando-se na inclinação de Lm
+% Determina o mÃ©todo de cÃ¡lculo da inclinaÃ§Ã£o das laterais da placa
+% baseando-se na inclinaÃ§Ã£o de Lm
 if abs(thetam) < 0.02 
     boy = 'y';
 else
     boy = 'b';
 end 
 
-% Rotação da imagem para o referêncial de Lm
+% RotaÃ§Ã£o da imagem para o referÃªncial de Lm
 hom = homwarp(rotm, imgs);
 
-% Caso a placa esteja muito inclinada, a imagem é rotacionada e os
-% processos anteriores são refeitos para se obter melhores resultados
+% Caso a placa esteja muito inclinada, a imagem Ã© rotacionada e os
+% processos anteriores sÃ£o refeitos para se obter melhores resultados
 if abs(thetam*180/pi) > 14.3
     
     imgs = homwarp(rotm, imgs);
@@ -85,15 +85,15 @@ if abs(thetam*180/pi) > 14.3
     
     thetam = atan(polm(1));
     axang = [0 0 1 -thetam];
-    rotm = axang2rotm(axang); % rotação do referêncial global para referêncial de Lm
+    rotm = axang2rotm(axang); % rotaÃ§Ã£o do referÃªncial global para referÃªncial de Lm
 
     hom = homwarp(rotm, imgs);
     
 end
 
-%% Rotação para o sistema de coordenadas de Lm (da placa)
+%% RotaÃ§Ã£o para o sistema de coordenadas de Lm (da placa)
 
-% Rotação das linhas Lt, Lm e Lb para o referêncial de Lm
+% RotaÃ§Ã£o das linhas Lt, Lm e Lb para o referÃªncial de Lm
 for i=1:size(Lt,2)
     
     Ltr(:,i) = rotm * Lt(:,i);
@@ -102,7 +102,7 @@ for i=1:size(Lt,2)
     
 end
 
-% Cálculo dos polinômios das retas rotacionadas
+% CÃ¡lculo dos polinÃ´mios das retas rotacionadas
 poltr = polyfit(Ltr(1,:), Ltr(2,:), 1);
 polmr = polyfit(Lmr(1,:), Lmr(2,:), 1);
 polbr = polyfit(Lbr(1,:), Lbr(2,:), 1);
@@ -115,7 +115,7 @@ polbr = polyfit(Lbr(1,:), Lbr(2,:), 1);
 % plot(Lbr(1,:),Lbr(2,:))
 % ----------
 
-%% Recalculando retas sobre um espaço do eixo x uniformizado
+%% Recalculando retas sobre um espaÃ§o do eixo x uniformizado
 
 if poltr(1) < polbr(1)
     
@@ -147,7 +147,7 @@ end
 % plot(Lbr(1,:),Lbr(2,:));
 % ----------
 
-%% Registro de parâmetros para cálculo das laterais da placa
+%% Registro de parÃ¢metros para cÃ¡lculo das laterais da placa
 
 Ltri = Ltr(2,1);
 Ltre = Ltr(2,end);
@@ -167,7 +167,7 @@ else
 end
 
 
-%% Cálculo do ponto de fuga da perspectiva da imagem
+%% CÃ¡lculo do ponto de fuga da perspectiva da imagem
 
 % Encontrando o ponto de fuga da perspectiva da imagem
 distOrigint = (Ltr(2,1) - Lmr(2,1)) / poltr(1);
@@ -189,7 +189,7 @@ Lbr(2,:) = polyval(polbr,Lbr(1,:));
 % plot(Lbr(1,:),Lbr(2,:));
 % ----------
 
-%% Cálculo da reta do topo da placa partindo do ponto de fuga
+%% CÃ¡lculo da reta do topo da placa partindo do ponto de fuga
 
 Ltemp(1,:) = Ltr(1,:) - origin;
 Ltemp(2,:) = Ltr(2,:);
@@ -209,7 +209,7 @@ poltpr = polyfit(Ltpr(1,:), Ltpr(2,:),1);
 % plot(Ltpr(1,:),Ltpr(2,:));
 % ----------
 
-%% Cálculo da reta de baixo da placa partindo do ponto de fuga
+%% CÃ¡lculo da reta de baixo da placa partindo do ponto de fuga
 
 Ltemp(1,:) = Lbr(1,:) - origin;
 Ltemp(2,:) = Lbr(2,:);
@@ -229,7 +229,7 @@ polbpr = polyfit(Lbpr(1,:), Lbpr(2,:), 1);
 % plot(Ltpr(1,:),Ltpr(2,:));
 % ----------
 
-%% Cálculo dos lados da placa
+%% CÃ¡lculo dos lados da placa
 
 x1 = Lmr(1,1)+deltae;
 y1 = polyval(polmr,x1);
@@ -240,7 +240,7 @@ y2 = polyval(polmr,x2);
 deltay = max([abs(polyval(polbpr,x2) + polyval(poltpr,x2)),...
     abs(polyval(polbpr,x1) + polyval(poltpr,x1))]);
 
-%% Cálculo da inclinação dos lados (método amarelo)
+%% CÃ¡lculo da inclinaÃ§Ã£o dos lados (mÃ©todo amarelo)
 
 if boy == 'y'
     
@@ -286,7 +286,7 @@ if boy == 'y'
 
 end
 
-%% Rotação de volta para referêncial global
+%% RotaÃ§Ã£o de volta para referÃªncial global
 
 for i=1:size(Lt,2)
     
@@ -312,7 +312,7 @@ limd = rotm\[x2;y2;0];
 % plot(ladoe(1,:),ladoe(2,:))
 % ----------
 
-%% Cálculo da inclinação dos lados (método azul)
+%% CÃ¡lculo da inclinaÃ§Ã£o dos lados (mÃ©todo azul)
 
 if boy == 'b'
     
@@ -355,17 +355,17 @@ end
 % letrasDaPlaca.plot_ellipse
 % ----------
 
-%% Cálculo da homografia da placa
+%% CÃ¡lculo da homografia da placa
 
-% Encontrando as quinas da placa pela intersecção das linhas
+% Encontrando as quinas da placa pela intersecÃ§Ã£o das linhas
 p(:,1) = InterX(Ltp, Ldp);
 p(:,2) = InterX(Ltp, Lep);
 p(:,3) = InterX(Lbp, Ldp);
 p(:,4) = InterX(Lbp, Lep);
 
 % No caso da imagem conter apenas a placa, os pontos das quinas da placa
-% serão calculados fora da imagem, o que causa problemas. Esse laço de
-% repetição corrige isso
+% serÃ£o calculados fora da imagem, o que causa problemas. Esse laÃ§o de
+% repetiÃ§Ã£o corrige isso
 for i=1:2
     for j=1:4
         if p(i,j) < 1
@@ -382,7 +382,7 @@ vmax = 241;
 
 % Dependendo de que lado da placa se encontra o ponto de fuga da
 % perspectiva, o algoritmo troca direita e esquerda. Este IF garante que a
-% relação dos pontos da homografia estão corretos
+% relaÃ§Ã£o dos pontos da homografia estÃ£o corretos
 if p(1,1) > p(1,2)
     H = homography([p(:,1), p(:,2), p(:,3), p(:,4)], [[umax;1],[1;1],[umax;vmax],[1;vmax]]);
 else
@@ -398,8 +398,15 @@ end
 % plot(p(1,4),p(2,4),'yx')
 % ----------
 
-% Aplicação da homografia
+% AplicaÃ§Ã£o da homografia
 [placa, offset] = homwarp(H, imgs, 'full');
+
+if offset(1) > 0
+    offset(1) = 0;
+end
+if offset(2) > 0
+    offset(2) = 0;
+end
 
 % ----------
 % idisp(placa)
