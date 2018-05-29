@@ -1,6 +1,7 @@
 # Leitura de Placas Veiculares
 
 No campo de visão computacional, um dos objetivos mais comuns é a identificação de objetos e figuras. Seja com o propósito de distinguir objetos, usar pontos de referência para calcular posições ou identificar caracteres para realizar sua leitura. Como o segundo trabalho da disciplina de Visão Computacional em Robótica BLU3040 do curso de graduação de Engenharia de Controle e Automação do Campus Blumenau da Universidade Federal de Santa Catarina, foi definido que os alunos deveriam desenvolver uma função que recebe uma imagem como entrada e realiza a leitura de uma placa veicular presente na imagem.
+
 Este conjunto de funções é o resultado deste trabalho. Elas foram elaboradas para localizar, isolar, corrigir perspectiva e ler placas de veículos no padrão brasileiro em imagens. Estas funções realizam isso por processamento de *features* de região, aplicação de princípios geométricos e comparação de *templates*. O desenvolvimento destas funções fez uso da [*toolbox* de visão computacional](http://petercorke.com/wordpress/toolboxes/machine-vision-toolbox) desenvolvida por Peter Corke. Também foi usada a função [INTERX](https://www.mathworks.com/matlabcentral/fileexchange/22441-curve-intersections) desenvolvida por NS.
 
 # Princípio de Funcionamento
