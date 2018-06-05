@@ -1,8 +1,8 @@
-%READPLATE leitura de placas veículares
-% out = readPlate(im) é uma célula com quatro campos, cada um contendo uma
-% string que são respectivamente a leitura das letras da identificação da
-% placa, a leitura dos números da identificação da placa, leitura da sigla
-% do estado da placa e a leitura da município da placa.
+%READPLATE leitura de placas veÃ­culares
+% out = readPlate(im) Ã© uma cÃ©lula com quatro campos, cada um contendo uma
+% string que sÃ£o respectivamente a leitura das letras da identificaÃ§Ã£o da
+% placa, a leitura dos nÃºmeros da identificaÃ§Ã£o da placa, leitura da sigla
+% do estado da placa e a leitura da municÃ­pio da placa.
 
 function out = readPlate(im)
     
@@ -13,22 +13,22 @@ function out = readPlate(im)
         
     end
     
-    % Caso a imagem seja muito grande, sua escala é reduzida para diminuir
-    % o custo de memória da função
+    % Caso a imagem seja muito grande, sua escala Ã© reduzida para diminuir
+    % o custo de memÃ³ria da funÃ§Ã£o
     if size(im,1)*size(im,2) > 3.0233e+06
         
         im = imresize(im, 0.6);
         
     end
     
-    % Isola a placa usando a função findPlate
+    % Isola a placa usando a funÃ§Ã£o findPlate
     imgs = findPlate(im);
 
     tamanhoim = size(imgs);
     hb = tamanhoim(1)/tamanhoim(2);
     areaim = tamanhoim(1)*tamanhoim(2);
 
-    % Baseando se na proporção altura/base escolhe os parâmetros para placa de
+    % Baseando se na proporÃ§Ã£o altura/base escolhe os parÃ¢metros para placa de
     % carro ou moto
     if hb > 0.5882
 
@@ -52,13 +52,13 @@ function out = readPlate(im)
         vminst = floor((39/241)*tamanhoim(1));
         vmaxst = floor((72/241)*tamanhoim(1));
         uminst = floor((125/742)*tamanhoim(2));
-        umaxst = floor((646/742)*tamanhoim(2));
+        umaxst = floor((635/742)*tamanhoim(2));
 
     end
 
-    %% Segmentação
+    %% SegmentaÃ§Ã£o
 
-    % Isola as áreas de interesse da placa
+    % Isola as Ã¡reas de interesse da placa
     imgscd = imgs(vmincd:vmaxcd, umincd:umaxcd);
     imgsst = imgs(vminst:vmaxst, uminst:umaxst);
 
@@ -66,7 +66,7 @@ function out = readPlate(im)
     % idisp({imgscd, imgsst})
     % ----------
 
-    %% Limiarização
+    %% LimiarizaÃ§Ã£o
 
     imtholdcd = imgscd < multithresh(imgscd);
     imtholdst = imgsst < multithresh(imgsst);
@@ -75,17 +75,17 @@ function out = readPlate(im)
     % idisp({imtholdcd, imtholdst})
     % ----------
 
-    %% Extração de features de região (blobs)
+    %% ExtraÃ§Ã£o de features de regiÃ£o (blobs)
 
     blobsst = iblobs(imtholdst, 'class', 1, 'area', [65/140000*areaim, areaim], 'connect', 8);
     blobscd = iblobs(imtholdcd, 'class', 1, 'area', [550/140000*areaim, areaim]);
 
-    %% Ordenação dos blobs
+    %% OrdenaÃ§Ã£o dos blobs
 
     blobscd = sortBlobs(blobscd);
     blobsst = sortBlobs(blobsst);
 
-    %% Isolamento dos blobs para comparação com templates
+    %% Isolamento dos blobs para comparaÃ§Ã£o com templates
 
     for i=1:numel(blobscd)
 
@@ -109,7 +109,7 @@ function out = readPlate(im)
 
     %% Preparo dos templates
 
-    % tmpA são os templates alfabéticos
+    % tmpA sÃ£o os templates alfabÃ©ticos
     thold = rgb2gray(iread('templates/templateA.png')) == 0;
     btpa = iblobs(thold, 'class', 1);
     [~,I] = sort(btpa(:).uc);
@@ -125,7 +125,7 @@ function out = readPlate(im)
 
     end
 
-    % tmpN são os templates numéricos
+    % tmpN sÃ£o os templates numÃ©ricos
     thold = rgb2gray(iread('templates/templateN.png')) == 0;
     btpn = iblobs(thold, 'class', 1);
     [~,I] = sort(btpn(:).uc);
