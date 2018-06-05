@@ -18,7 +18,7 @@ function letrasDaPlaca = locatePlateBlobs(im)
 
     %% Extração de blobs
 
-    imgBlobs = iblobs(imthold, 'class', 1, 'area', [floor(areaim*100/468/823), areaim*0.038], 'touch', 0);
+    imgBlobs = iblobs(imthold, 'class', 1, 'area', [floor(areaim*100/468/823), areaim*0.042], 'touch', 0);
 
     %% Identificação de pais
 
